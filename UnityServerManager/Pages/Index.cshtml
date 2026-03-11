@@ -1,0 +1,806 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Unity Linux Server Manager";
+}
+
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+        --danger-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --info-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        --dark-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    }
+
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+    }
+
+    .page-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        margin-bottom: 2rem;
+        animation: slideInDown 0.5s ease-out;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .status-badge {
+        font-size: 1.1rem;
+        padding: 0.6rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .server-info {
+        background: white;
+        border-left: 5px solid #667eea;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .server-info:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    }
+
+    .info-item {
+        padding: 0.5rem;
+        border-radius: 8px;
+        transition: background 0.3s ease;
+    }
+
+    .info-item:hover {
+        background: rgba(102, 126, 234, 0.1);
+    }
+
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+        animation: fadeInUp 0.5s ease-out;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    }
+
+    .card-header-custom {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 1.5rem;
+        font-weight: 600;
+        font-size: 1.2rem;
+    }
+
+    .instance-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+
+    .instance-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 25px rgba(0,0,0,0.12);
+        border-left-color: #667eea;
+    }
+
+    .btn-gradient-primary {
+        background: var(--primary-gradient);
+        border: none;
+        color: white;
+        font-weight: 600;
+        padding: 0.6rem 1.5rem;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-gradient-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .btn-gradient-success {
+        background: var(--success-gradient);
+        border: none;
+        color: white;
+        font-weight: 600;
+        padding: 0.6rem 1.5rem;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+    }
+
+    .btn-gradient-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 210, 255, 0.4);
+        color: white;
+    }
+
+    .btn-gradient-danger {
+        background: var(--danger-gradient);
+        border: none;
+        color: white;
+        font-weight: 600;
+        padding: 0.6rem 1.5rem;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
+    }
+
+    .btn-gradient-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+        color: white;
+    }
+
+    .btn-gradient-warning {
+        background: var(--warning-gradient);
+        border: none;
+        color: white;
+        font-weight: 600;
+        padding: 0.6rem 1.5rem;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(250, 112, 154, 0.3);
+    }
+
+    .btn-gradient-warning:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(250, 112, 154, 0.4);
+        color: white;
+    }
+
+    .btn-gradient-info {
+        background: var(--info-gradient);
+        border: none;
+        color: #333;
+        font-weight: 600;
+        padding: 0.6rem 1.5rem;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(168, 237, 234, 0.3);
+    }
+
+    .btn-gradient-info:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(168, 237, 234, 0.4);
+        color: #333;
+    }
+
+    .pulse {
+        animation: pulse 2s infinite;
+    }
+
+    @@keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+
+    @@keyframes slideInDown {
+        from {
+            transform: translateY(-30px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            transform: translateY(30px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .stat-box {
+        background: white;
+        padding: 1rem;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+
+    .stat-box:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #667eea;
+        margin-top: 0.5rem;
+    }
+
+    .progress-bar {
+        background: var(--primary-gradient);
+        border-radius: 10px;
+    }
+
+    .alert-gradient-info {
+        background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+        border: none;
+        border-left: 4px solid #00acc1;
+        border-radius: 10px;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+    }
+
+    .alert-gradient-warning {
+        background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+        border: none;
+        border-left: 4px solid #ff9800;
+        border-radius: 10px;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+    }
+
+    .upload-section {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+
+    .badge-gradient {
+        background: var(--primary-gradient);
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-weight: 600;
+    }
+
+    .running-instances-header {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 15px 15px 0 0;
+        font-weight: 600;
+        font-size: 1.3rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+</style>
+
+<div class="container py-4">
+    <div class="page-header">
+        <h1>
+            <i class="bi bi-server"></i> Unity Linux Server Manager
+        </h1>
+        <p class="mb-0 mt-2" style="opacity: 0.9;">
+            <i class="bi bi-code-square"></i> Development Mode - Local Control
+        </p>
+    </div>
+
+<div class="server-info">
+    <div class="row g-3">
+        <div class="col-md-3 info-item">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-hdd-network fs-3 text-primary me-2"></i>
+                <div>
+                    <div class="stat-label">Remote Host</div>
+                    <div class="fw-bold">@Model.Server.Host</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 info-item">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-gear-fill fs-3 text-success me-2"></i>
+                <div>
+                    <div class="stat-label">Service</div>
+                    <div class="fw-bold">@Model.Server.ServiceName</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 info-item">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-ethernet fs-3 text-warning me-2"></i>
+                <div>
+                    <div class="stat-label">Game Port</div>
+                    <div class="fw-bold">@Model.Server.UnityServerPort</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 info-item">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-terminal-fill fs-3 text-danger me-2"></i>
+                <div>
+                    <div class="stat-label">SSH Port</div>
+                    <div class="fw-bold">@Model.Server.Port</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col-12">
+            <form method="post" asp-page-handler="TestConnection" class="d-inline">
+                <button type="submit" class="btn btn-gradient-primary">
+                    <i class="bi bi-arrow-repeat"></i> Test SSH Connection & Auto-Detect Port
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@if (Model.ServerStatus != null)
+{
+    <div class="card mb-4 border-@(Model.ServerStatus.IsRunning ? "success" : "danger")">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-activity"></i> Server Status
+                </h5>
+                @if (Model.ServerStatus.IsRunning)
+                {
+                    <span class="status-badge badge bg-success pulse">
+                        <i class="bi bi-check-circle-fill"></i> RUNNING
+                    </span>
+                }
+                else
+                {
+                    <span class="status-badge badge bg-danger">
+                        <i class="bi bi-x-circle-fill"></i> STOPPED
+                    </span>
+                }
+            </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="text-muted small">Status</div>
+                    <span class="badge @(Model.ServerStatus.IsActive ? "bg-success" : "bg-secondary")">
+                        @Model.ServerStatus.Status
+                    </span>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">Sub-State</div>
+                    <strong>@Model.ServerStatus.SubState</strong>
+                </div>
+                <div class="col-md-2">
+                    <div class="text-muted small">Process ID</div>
+                    <strong>@Model.ServerStatus.MainPid</strong>
+                </div>
+                <div class="col-md-2">
+                    <div class="text-muted small">Memory Usage</div>
+                    <strong>@Model.ServerStatus.Memory</strong>
+                </div>
+                <div class="col-md-2">
+                    <div class="text-muted small">Uptime</div>
+                    <strong>@Model.ServerStatus.Uptime</strong>
+                </div>
+            </div>
+            <div class="mt-3">
+                <form method="get" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh Status
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i> Unable to connect to server. Check your SSH configuration.
+    </div>
+}
+
+    <div class="upload-section mb-4">
+        <h5 class="mb-4">
+            <i class="bi bi-cloud-upload-fill text-primary"></i> Upload Unity Build Folder
+        </h5>
+        <form method="post" enctype="multipart/form-data" asp-page-handler="Upload" id="uploadForm">
+            <div class="mb-3">
+                <label class="form-label fw-bold">Select Unity Linux Build Folder</label>
+                <input type="file" name="BuildFiles" class="form-control" id="folderInput" webkitdirectory multiple required />
+                <div class="form-text mt-3">
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <i class="bi bi-folder2-open text-primary"></i> <strong>Click to select a folder</strong> - All files and subfolders will be uploaded
+                        </div>
+                        <div class="col-md-6">
+                            <i class="bi bi-cloud-arrow-up text-success"></i> <strong>Max total size:</strong> 2 GB
+                        </div>
+                        <div class="col-md-6">
+                            <i class="bi bi-hdd text-warning"></i> <strong>Deploy path:</strong> <code>@Model.Server.RemoteDeployPath</code>
+                        </div>
+                        <div class="col-md-6">
+                            <i class="bi bi-check-circle text-success"></i> Folder structure will be preserved
+                        </div>
+                        <div class="col-md-6">
+                            <i class="bi bi-terminal text-danger"></i> Unity executables (.x86_64) will be made executable
+                        </div>
+                        <div class="col-md-6">
+                            <i class="bi bi-play-circle text-info"></i> <strong>Server will auto-start after upload</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+                <!-- Progress Bar -->
+                <div class="mb-3" id="progressContainer" style="display: none;">
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             id="uploadProgress" 
+                             role="progressbar" 
+                             style="width: 0%;" 
+                             aria-valuenow="0" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">0%</div>
+                    </div>
+                    <small class="text-muted" id="progressText">Preparing upload...</small>
+                </div>
+
+                        <button type="submit" class="btn btn-gradient-success btn-lg" id="uploadBtn">
+                            <i class="bi bi-upload"></i> Upload Folder & Start Server
+                        </button>
+                        <div class="spinner-border spinner-border-sm ms-2" id="uploadSpinner" style="display: none;" role="status">
+                            <span class="visually-hidden">Uploading...</span>
+                        </div>
+                    </form>
+                </div>
+
+<script>
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBar = document.getElementById('uploadProgress');
+    const progressText = document.getElementById('progressText');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const uploadSpinner = document.getElementById('uploadSpinner');
+    const folderInput = document.getElementById('folderInput');
+
+    // Show progress bar
+    progressContainer.style.display = 'block';
+    uploadBtn.disabled = true;
+    uploadSpinner.style.display = 'inline-block';
+
+    // Calculate file count and size
+    const files = folderInput.files;
+    const fileCount = files.length;
+    const totalSize = Array.from(files).reduce((sum, file) => sum + file.size, 0);
+    const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+
+    progressText.textContent = `Uploading ${fileCount} files (${totalSizeMB} MB)...`;
+
+    // Simulate progress (since we can't track actual SFTP progress easily)
+    let progress = 0;
+    const interval = setInterval(() => {
+        if (progress < 90) {
+            progress += Math.random() * 10;
+            if (progress > 90) progress = 90;
+            progressBar.style.width = progress + '%';
+            progressBar.textContent = Math.round(progress) + '%';
+            progressBar.setAttribute('aria-valuenow', progress);
+        }
+    }, 500);
+
+    // Store interval ID to clear it later
+    window.uploadInterval = interval;
+});
+
+// Show file selection info
+document.getElementById('folderInput').addEventListener('change', function(e) {
+    const files = e.target.files;
+    if (files.length > 0) {
+        const totalSize = Array.from(files).reduce((sum, file) => sum + file.size, 0);
+        const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+        const folderName = files[0].webkitRelativePath.split('/')[0];
+
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'alert alert-info mt-2';
+        infoDiv.innerHTML = `<strong>Selected:</strong> ${folderName} (${files.length} files, ${totalSizeMB} MB)`;
+
+        // Remove old info if exists
+        const oldInfo = document.querySelector('.alert.alert-info');
+        if (oldInfo) oldInfo.remove();
+
+        e.target.parentElement.appendChild(infoDiv);
+    }
+});
+</script>
+
+<div class="card mb-4" style="border: none; box-shadow: 0 5px 20px rgba(0,0,0,0.1); border-radius: 15px;">
+    <div class="card-header-custom">
+        <i class="bi bi-controller"></i> Service Controls
+    </div>
+    <div class="card-body">
+        <div class="d-flex gap-3 flex-wrap justify-content-center">
+            <form method="post" asp-page-handler="Start" class="d-inline">
+                <button type="submit" class="btn btn-gradient-success btn-lg" @(Model.ServerStatus?.IsRunning == true ? "disabled" : "")>
+                    <i class="bi bi-play-fill"></i> Start Server
+                </button>
+            </form>
+            <form method="post" asp-page-handler="Stop" class="d-inline">
+                <button type="submit" class="btn btn-gradient-danger btn-lg" @(Model.ServerStatus?.IsRunning == false ? "disabled" : "")>
+                    <i class="bi bi-stop-fill"></i> Stop Server
+                </button>
+            </form>
+            <form method="post" asp-page-handler="Restart" class="d-inline">
+                <button type="submit" class="btn btn-gradient-warning btn-lg" @(Model.ServerStatus?.IsRunning == false ? "disabled" : "")>
+                    <i class="bi bi-arrow-clockwise"></i> Restart Server
+                </button>
+            </form>
+            <form method="post" asp-page-handler="CheckPorts" class="d-inline">
+                <button type="submit" class="btn btn-gradient-info btn-lg" @(Model.ServerStatus?.IsRunning == false ? "disabled" : "")>
+                    <i class="bi bi-ethernet"></i> Check Listening Ports
+                </button>
+            </form>
+        </div>
+        <div class="mt-3 text-center text-muted">
+            <i class="bi bi-info-circle"></i> Controls execute via SSH on remote server
+        </div>
+    </div>
+</div>
+
+@if (Model.UnityInstances != null && Model.UnityInstances.Any())
+{
+    <div class="card mb-4" style="border: none; overflow: hidden;">
+        <div class="running-instances-header">
+            <i class="bi bi-server"></i> Running Unity Server Instances (@Model.UnityInstances.Count)
+        </div>
+        <div class="card-body" style="background: white;">
+            <div class="row">
+                @foreach (var instance in Model.UnityInstances)
+                {
+                    <div class="col-md-6 mb-3">
+                        <div class="instance-card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <strong style="font-size: 1.1rem;">
+                                    <i class="bi bi-play-circle-fill" style="color: #11998e;"></i> 
+                                    PID: @instance.ProcessId
+                                </strong>
+                                @if (instance.Port.HasValue)
+                                {
+                                    <span class="badge-gradient">
+                                        <i class="bi bi-ethernet"></i> Port: @instance.Port
+                                    </span>
+                                }
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <div class="stat-box">
+                                        <div class="stat-label">CPU Usage</div>
+                                        <div class="stat-value">@instance.CpuPercent%</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="stat-box">
+                                        <div class="stat-label">Memory</div>
+                                        <div class="stat-value" style="font-size: 1rem;">@instance.MemoryMB<br/><small>(@instance.MemoryPercent%)</small></div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="stat-box">
+                                        <div class="stat-label">Uptime</div>
+                                        <div class="stat-value" style="font-size: 1.1rem;">@instance.Uptime</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="stat-box">
+                                        <div class="stat-label">Started</div>
+                                        <div class="stat-value" style="font-size: 1.1rem;">@instance.StartTime</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <small class="stat-label">User</small>
+                                <div class="fw-bold">@instance.User</div>
+                            </div>
+                            <div class="mb-3">
+                                <small class="stat-label">Executable</small>
+                                <div><code class="small">@instance.ExecutablePath</code></div>
+                            </div>
+
+                            <div class="d-flex gap-2 flex-wrap">
+                                <form method="post" asp-page-handler="StopInstance" asp-route-pid="@instance.ProcessId" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-gradient-danger">
+                                        <i class="bi bi-stop-circle"></i> Stop
+                                    </button>
+                                </form>
+                                <form method="post" asp-page-handler="RestartInstance" asp-route-pid="@instance.ProcessId" asp-route-execPath="@instance.ExecutablePath" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-gradient-warning">
+                                        <i class="bi bi-arrow-clockwise"></i> Restart
+                                    </button>
+                                </form>
+                                <form method="post" asp-page-handler="ViewInstanceLogs" asp-route-pid="@instance.ProcessId" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-gradient-info">
+                                        <i class="bi bi-file-text"></i> View Logs
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert-gradient-warning alert alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> <strong>No Unity Server Instances Running</strong>
+        <br />Upload a Unity build and it will auto-start, or use the systemd service controls above.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-folder2-open"></i> Browse Server Directories
+                    </h5>
+                    <form method="post" asp-page-handler="ListDirectory">
+                        <div class="mb-3">
+                            <label class="form-label">Directory Path</label>
+                            <input type="text" class="form-control" name="DirectoryPath" value="@Model.DirectoryPath" placeholder="/root" />
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i> Common paths: /root, /opt, /home, /var/log
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-list-ul"></i> List Directory
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-cpu"></i> System Information
+                    </h5>
+                    <div class="d-flex flex-column gap-2">
+                        <form method="post" asp-page-handler="ViewProcesses">
+                            <button type="submit" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-list-task"></i> View Unity Server Instances
+                            </button>
+                        </form>
+                        <form method="post" asp-page-handler="CheckAllPorts">
+                            <button type="submit" class="btn btn-outline-info w-100">
+                                <i class="bi bi-hdd-network"></i> View All Listening Ports
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="bi bi-info-circle-fill"></i> @Model.StatusMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (Model.TestResult != null)
+    {
+        <div class="alert @(Model.TestResult.IsConnected ? "alert-success" : "alert-danger") alert-dismissible fade show" role="alert">
+            <strong>@(Model.TestResult.IsConnected ? "? Connection Test Passed" : "? Connection Test Failed")</strong>
+            <br />@Model.TestResult.Message
+            @if (Model.TestResult.DetectedPort.HasValue)
+            {
+                <br /><strong>Detected SSH Port:</strong> @Model.TestResult.DetectedPort
+            }
+            @if (!string.IsNullOrEmpty(Model.TestResult.ErrorDetails))
+            {
+                <br /><strong>Details:</strong> @Model.TestResult.ErrorDetails
+            }
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(Model.DirectoryListing))
+    {
+        <div class="card mb-4 border-primary">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-folder2-open"></i> Directory: @Model.DirectoryPath
+            </div>
+            <div class="card-body">
+                <pre class="mb-0" style="background: #f8f9fa; padding: 1rem; border-radius: 4px; max-height: 400px; overflow-y: auto;">@Model.DirectoryListing</pre>
+            </div>
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(Model.ProcessList))
+    {
+        <div class="card mb-4 border-warning">
+            <div class="card-header bg-warning text-dark">
+                <i class="bi bi-cpu"></i> Unity Server Instances (-batchmode -nographics)
+            </div>
+            <div class="card-body">
+                <pre class="mb-0" style="background: #f8f9fa; padding: 1rem; border-radius: 4px; font-size: 0.85rem; max-height: 500px; overflow-y: auto;">@Model.ProcessList</pre>
+            </div>
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(Model.AllPortsInfo))
+    {
+        <div class="card mb-4 border-info">
+            <div class="card-header bg-info text-white">
+                <i class="bi bi-hdd-network"></i> All Listening Ports & Network Connections
+            </div>
+            <div class="card-body">
+                <pre class="mb-0" style="background: #f8f9fa; padding: 1rem; border-radius: 4px; font-size: 0.85rem; max-height: 500px; overflow-y: auto;">@Model.AllPortsInfo</pre>
+            </div>
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(Model.PortInfo))
+    {
+        <div class="card mb-4 border-info">
+            <div class="card-header bg-info text-white">
+                <i class="bi bi-ethernet"></i> Service Listening Ports
+            </div>
+            <div class="card-body">
+                <pre class="mb-0" style="background: #f8f9fa; padding: 1rem; border-radius: 4px;">@Model.PortInfo</pre>
+            </div>
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(Model.Output))
+    {
+        <div class="card mb-4 border-secondary">
+            <div class="card-header bg-dark text-white">
+                <i class="bi bi-terminal"></i> Command Output
+            </div>
+            <div class="card-body">
+                <pre class="mb-0" style="background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 4px;">@Model.Output</pre>
+            </div>
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(Model.InstanceLogs))
+    {
+        <div class="card mb-4 border-primary">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-file-earmark-text"></i> Unity Instance Logs
+            </div>
+            <div class="card-body">
+                <pre class="mb-0" style="background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 4px; max-height: 600px; overflow-y: auto;">@Model.InstanceLogs</pre>
+            </div>
+        </div>
+    }
+</div>
