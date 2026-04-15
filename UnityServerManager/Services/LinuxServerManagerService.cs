@@ -302,7 +302,11 @@ echo 'Legend: USER | PID | %CPU | %MEM | START_TIME | COMMAND'
         try
         {
             Console.WriteLine($"=== Restarting Instance PID: {pid} ===");
-            Console.WriteLine($"Executable path: {executablePath}");
+            Console.WriteLine($"Executable path (raw): {executablePath}");
+
+            // Resolve the absolute path BEFORE stopping, while the process is still alive
+            var absoluteExecPath = await GetAbsoluteExecPathAsync(pid, executablePath);
+            Console.WriteLine($"Executable path (resolved): {absoluteExecPath}");
 
             // Stop the instance
             Console.WriteLine("Step 1: Stopping instance...");
@@ -340,9 +344,9 @@ echo 'Legend: USER | PID | %CPU | %MEM | START_TIME | COMMAND'
                 await Task.Delay(2000);
             }
 
-            // Start the instance again with the same executable
+            // Start the instance again using the resolved absolute path
             Console.WriteLine("Step 3: Starting instance...");
-            var startResult = await StartInstanceAsync(executablePath);
+            var startResult = await StartInstanceAsync(absoluteExecPath);
 
             Console.WriteLine($"Start result - Success: {startResult.Success}, Message: {startResult.Message}");
 
@@ -381,11 +385,11 @@ echo 'Legend: USER | PID | %CPU | %MEM | START_TIME | COMMAND'
             // Get the directory where the executable is located
             var execDirectory = Path.GetDirectoryName(executablePath)?.Replace('\\', '/');
 
-            // If no directory, assume it's in RemoteDeployPath
-            if (string.IsNullOrEmpty(execDirectory))
+            // If no directory, or only a relative marker ("."), resolve against RemoteDeployPath
+            if (string.IsNullOrEmpty(execDirectory) || execDirectory == ".")
             {
                 execDirectory = _options.RemoteDeployPath;
-                executablePath = $"{_options.RemoteDeployPath}/{executablePath}".Replace("//", "/");
+                executablePath = $"{_options.RemoteDeployPath}/{Path.GetFileName(executablePath)}";
             }
 
             var execFileName = Path.GetFileName(executablePath);
@@ -1087,6 +1091,47 @@ echo 'Legend: USER | PID | %CPU | %MEM | START_TIME | COMMAND'
         catch (Exception ex)
         {
             return new OperationResult(false, $"Service {action} failed.", ex.Message);
+        }
+    }
+
+    private async Task<string> GetAbsoluteExecPathAsync(string pid, string executablePath)
+    {
+        try
+        {
+            var resolved = await Task.Run(() =>
+            {
+                using var sshClient = new SshClient(CreateConnectionInfo());
+                sshClient.ConnectionInfo.Timeout = TimeSpan.FromSeconds(10);
+                sshClient.Connect();
+
+                // /proc/{pid}/exe is a symlink to the actual binary on Linux
+                var exeCmd = $"readlink /proc/{pid}/exe 2>/dev/null";
+                var exeResult = sshClient.RunCommand(exeCmd);
+                var exePath = exeResult.Result.Trim();
+
+                if (!string.IsNullOrEmpty(exePath))
+                {
+                    sshClient.Disconnect();
+                    return exePath;
+                }
+
+                // Fallback: working directory + filename
+                var cwdCmd = $"readlink /proc/{pid}/cwd 2>/dev/null";
+                var cwdResult = sshClient.RunCommand(cwdCmd);
+                sshClient.Disconnect();
+
+                var cwd = cwdResult.Result.Trim();
+                if (!string.IsNullOrEmpty(cwd))
+                    return $"{cwd}/{Path.GetFileName(executablePath)}";
+
+                return executablePath;
+            });
+
+            return string.IsNullOrEmpty(resolved) ? executablePath : resolved;
+        }
+        catch
+        {
+            return executablePath;
         }
     }
 

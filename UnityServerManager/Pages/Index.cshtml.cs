@@ -197,7 +197,22 @@ public class IndexModel : PageModel
         var result = await _serverManager.RestartInstanceAsync(pid, execPath);
         StatusMessage = result.Message;
         Output = result.Output;
+
+        if (result.Success)
+            await Task.Delay(2000); // give the new process time to appear in ps aux
+
         await OnGetAsync();
+
+        if (result.Success && UnityInstances.Any())
+        {
+            var execFileName = Path.GetFileName(execPath);
+            var newInstance = UnityInstances
+                .FirstOrDefault(i => i.ExecutablePath == execPath ||
+                                     i.ExecutablePath.EndsWith(execFileName));
+
+            var targetPid = newInstance?.ProcessId ?? UnityInstances[0].ProcessId;
+            InstanceLogs = await _serverManager.GetInstanceLogsAsync(targetPid);
+        }
     }
 
     public async Task OnPostStartInstanceAsync(string execPath)
